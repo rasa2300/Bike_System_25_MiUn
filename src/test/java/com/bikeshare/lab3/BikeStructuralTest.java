@@ -87,6 +87,13 @@ public class BikeStructuralTest {
     }
 
     @Test
+    @DisplayName("Can start ride with bike in RESERVED status")
+    void canStartRideWithBikeInReservedStatus() {
+        standardBike.reserve();
+        assertDoesNotThrow(() -> standardBike.startRide());
+    }
+
+    @Test
     @DisplayName("Cannot start ride with bike in incorrect status")
     void cannotStartRideWithBikeInIncorrectStatus() {
         // Test BROKEN state
@@ -295,6 +302,14 @@ public class BikeStructuralTest {
         assertFalse(standardBike.isAvailable());
     }
 
+    @Test
+    @DisplayName("Bike is not available when in non-AVAILABLE status")
+    void bikeIsNotAvailableWhenInNonAvailableStatus() {
+        standardBike.startRide();
+
+        assertFalse(standardBike.isAvailable());
+    }
+
     // equals()
 
     @Test
@@ -305,6 +320,7 @@ public class BikeStructuralTest {
         Bike bike3 = new Bike("B002", Bike.BikeType.STANDARD);
 
         assertAll(
+            () -> assertEquals(bike1, bike1),
             () -> assertEquals(bike1, standardBike),
             () -> assertEquals(bike1, bike2),
             () -> assertNotEquals(bike1, bike3),
