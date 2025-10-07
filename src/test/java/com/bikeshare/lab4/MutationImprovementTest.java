@@ -16,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
+
 /**
  * Lab 4: Mutation Testing Improvement Template
  * 
@@ -46,7 +48,6 @@ import static org.mockito.Mockito.*;
 @DisplayName("Lab 4: Mutation Testing Improvement")
 public class MutationImprovementTest {
 
-    // TODO: Set up mocks for dependencies
     @Mock
     private IDNumberValidator mockIdValidator;
     
@@ -66,48 +67,41 @@ public class MutationImprovementTest {
         // Add any common setup here if needed
     }
     
-    // TODO: Write tests to kill boundary condition mutations
-    // Hint: The mutation >= vs > is a common survivor
     @Test
     @DisplayName("Should kill boundary mutation: exactly 18 years old")
-    void shouldKillBoundaryMutation_Exactly18() {
-        // TODO: Create a person who is exactly 18 years old
-        // Hint: Use a birthday that makes them 18 today
-        // Hint: Mock the dependencies to return true for validation and auth
-        // Hint: This test should kill the >= vs > mutation
+    void shouldKillBoundaryMutationExactly18() {
+        LocalDate today = LocalDate.now();
+        String year = String.format("%04d", today.getYear() - 18);   // Get birth year (18 years ago)
+        String month = String.format("%02d", today.getMonthValue()); // Current month
+        String day = String.format("%02d", today.getDayOfMonth());   // Current day
         
-        // String exactly18ID = "???"; // Figure out the right format
-        // when(mockIdValidator.isValidIDNumber(exactly18ID)).thenReturn(???);
-        // when(mockBankIdService.authenticate(exactly18ID)).thenReturn(???);
+        String pnr = year + month + day + "1234";
         
-        // boolean result = ageValidator.isAdult(exactly18ID);
-        
-        // assertTrue(result, "Person exactly 18 should be adult");
-        // verify(mockIdValidator).isValidIDNumber(exactly18ID);
-        // verify(mockBankIdService).authenticate(exactly18ID);
+        when(mockIdValidator.isValidIDNumber(pnr)).thenReturn(true);
+        when(mockBankIdService.authenticate(pnr)).thenReturn(true);
+
+        boolean result = ageValidator.isAdult(pnr);
+
+        assertTrue(result, "Person exactly 18 should be adult");
+        verify(mockIdValidator).isValidIDNumber(pnr);
+        verify(mockBankIdService).authenticate(pnr);
     }
     
-    // TODO: Write tests to kill conditional logic mutations
-    // Hint: Test the ID validation condition
     @Test
     @DisplayName("Should kill conditional mutation: invalid ID handling")
     void shouldKillConditionalMutation_InvalidId() {
-        // TODO: Test what happens when ID validation fails
-        // Hint: Mock mockIdValidator.isValidIDNumber() to return false
-        // Hint: This should throw IllegalArgumentException
-        // Hint: BankID service should NOT be called when ID is invalid
         
-        // String invalidId = "invalid123";
-        // when(mockIdValidator.isValidIDNumber(invalidId)).thenReturn(false);
+        String invalidId = "invalid123";
+        when(mockIdValidator.isValidIDNumber(invalidId)).thenReturn(false);
         
-        // IllegalArgumentException exception = assertThrows(
-        //     IllegalArgumentException.class,
-        //     () -> ageValidator.isAdult(invalidId)
-        // );
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> ageValidator.isAdult(invalidId)
+        );
         
-        // assertEquals("Invalid ID number", exception.getMessage());
-        // verify(mockIdValidator).isValidIDNumber(invalidId);
-        // verifyNoInteractions(mockBankIdService); // Important: BankID not called
+        assertEquals("Invalid ID number", exception.getMessage());
+        verify(mockIdValidator).isValidIDNumber(invalidId);
+        verifyNoInteractions(mockBankIdService); // Important: BankID not called
     }
     
     // TODO: Write tests to kill authentication mutations
