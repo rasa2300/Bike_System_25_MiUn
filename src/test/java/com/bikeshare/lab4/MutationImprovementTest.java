@@ -54,12 +54,8 @@ public class MutationImprovementTest {
     @Mock
     private BankIDService mockBankIdService;
     
-    // TODO: Inject mocks into the class under test
     @InjectMocks
     private AgeValidator ageValidator;
-    
-    // TODO: You can also test User class mutations
-    // Hint: Look at User.java for other mutation opportunities
     
     @BeforeEach
     void setUp() {
@@ -90,7 +86,6 @@ public class MutationImprovementTest {
     @Test
     @DisplayName("Should kill conditional mutation: invalid ID handling")
     void shouldKillConditionalMutation_InvalidId() {
-        
         String invalidId = "invalid123";
         when(mockIdValidator.isValidIDNumber(invalidId)).thenReturn(false);
         
@@ -104,45 +99,49 @@ public class MutationImprovementTest {
         verifyNoInteractions(mockBankIdService); // Important: BankID not called
     }
     
-    // TODO: Write tests to kill authentication mutations
-    // Hint: Test what happens when BankID authentication fails
     @Test
     @DisplayName("Should kill authentication mutation: auth failure handling")
     void shouldKillAuthenticationMutation_AuthFailure() {
-        // TODO: Test authentication failure scenario
-        // Hint: ID validation passes, but authentication fails
-        // Hint: Should throw IllegalArgumentException with "Authentication failed"
+        String validId = "200101010000";
+        when(mockIdValidator.isValidIDNumber(validId)).thenReturn(true);
+        when(mockBankIdService.authenticate(validId)).thenReturn(false);
         
-        // String validId = "200101010000";
-        // when(mockIdValidator.isValidIDNumber(validId)).thenReturn(true);
-        // when(mockBankIdService.authenticate(validId)).thenReturn(false);
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> ageValidator.isAdult(validId)
+        );
         
-        // IllegalArgumentException exception = assertThrows(
-        //     IllegalArgumentException.class,
-        //     () -> ageValidator.isAdult(validId)
-        // );
-        
-        // assertEquals("Authentication failed", exception.getMessage());
-        // verify(mockIdValidator).isValidIDNumber(validId);
-        // verify(mockBankIdService).authenticate(validId);
+        assertEquals("Authentication failed", exception.getMessage());
+        verify(mockIdValidator).isValidIDNumber(validId);
+        verify(mockBankIdService).authenticate(validId);
     }
     
-    // TODO: Target the survived mutations on lines 43-44
-    // These are related to birthday adjustment logic
     @Test
     @DisplayName("Should kill birthday logic mutation: person before birthday")
     void shouldKillBirthdayMutation_PersonBeforeBirthday() {
-        // TODO: This is the tricky one - create a scenario where the birthday
-        // adjustment logic (age--) needs to be executed
-        // Hint: Create a person born in December, test before their birthday
-        // Hint: This targets the survived mutations in the current tests
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        int birthYear = tomorrow.getYear() - 18; // 18 years ago
+        int birthMonth = tomorrow.getMonthValue();
+        int birthDay = tomorrow.getDayOfMonth();
         
-        // Think about it: If someone is born Dec 31, 2005 and today is Dec 30, 2023,
-        // they are technically still 17 (haven't had their 18th birthday yet)
+        // ...what if we run this test on the 31st of december?
+        // spooky non-deterministic tests!
+
+        String year = String.format("%04d", birthYear);
+        String month = String.format("%02d", birthMonth);
+        String day = String.format("%02d", birthDay);
         
-        // String preBirthdayId = "051231????"; // Complete this
-        // Configure mocks appropriately
-        // Test that they are NOT adult yet
+        String preBirthdayId = year + month + day + "1234";
+        
+        when(mockIdValidator.isValidIDNumber(preBirthdayId)).thenReturn(true);
+        when(mockBankIdService.authenticate(preBirthdayId)).thenReturn(true);
+        
+        boolean result = ageValidator.isAdult(preBirthdayId);
+        
+        assertFalse(result, "Person who hasn't had their 18th birthday yet should not be adult");
+        verify(mockIdValidator).isValidIDNumber(preBirthdayId);
+        verify(mockBankIdService).authenticate(preBirthdayId);
     }
     
     // TODO: Write more tests for other mutation types
