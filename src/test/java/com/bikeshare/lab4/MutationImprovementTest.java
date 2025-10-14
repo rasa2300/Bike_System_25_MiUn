@@ -63,6 +63,10 @@ public class MutationImprovementTest {
         // Add any common setup here if needed
     }
     
+    private static User newUser() {
+        return new User("010101-1237", "user@example.com", "Bo", "Ek");
+    }
+    
     @Test
     @DisplayName("Should kill boundary mutation: exactly 18 years old")
     void shouldKillBoundaryMutationExactly18() {
@@ -147,15 +151,30 @@ public class MutationImprovementTest {
     // TODO: Write more tests for other mutation types
     // Hint: Look at the mutation report to see what other mutations exist
     // Examples: return value mutations, math operator mutations, etc.
-    
-    // TODO: Test User class mutations (optional)
-    // Hint: Create tests for User.java methods that have survived mutations
+
     @Test
-    @DisplayName("Should test User class mutations")
-    void shouldTestUserMutations() {
-        // TODO: If you want extra credit, look at User class mutations
-        // Create User objects and test their methods
-        // Use mocks if User has dependencies in the future
+    @DisplayName("accepts minimum 0.01")
+    void minimumAccepted() {
+        var u = newUser();
+        u.addFunds(0.01);
+        assertEquals(0.01, u.getAccountBalance(), 1e-9);
+    }
+
+    @Test
+    @DisplayName("rejects > 1000.00")
+    void overMaxRejected() {
+        var u = newUser();
+        double before = u.getAccountBalance();
+        assertThrows(IllegalArgumentException.class, () -> u.addFunds(1000.01));
+        assertEquals(before, u.getAccountBalance(), 1e-9);
+    }
+
+    @Test
+    @DisplayName("throws on insufficient balance")
+    void insufficient() {
+        var u = newUser();
+        assertThrows(IllegalStateException.class, () -> u.deductFunds(1.0));
+        assertEquals(0.0, u.getAccountBalance(), 1e-9);
     }
     
     // MEASUREMENT: After implementing your tests, run mutation testing again:
