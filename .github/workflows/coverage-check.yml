@@ -23,8 +23,8 @@ jobs:
     - name: Run tests and generate coverage (skip coverage check)
       run: |
         # Run tests and continue even if some fail (student repository)
-        mvn clean test -Djacoco.skip=true -Dmaven.test.failure.ignore=true
-        mvn jacoco:report -Djacoco.skip=false
+        mvn clean test -Dmaven.test.failure.ignore=true
+        mvn jacoco:report
         
     - name: Extract coverage info
       id: coverage
